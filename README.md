@@ -15,7 +15,7 @@ Case 2:
 
 Requirements
 ------------
-None
+yum
 
 Role Variables
 --------------
