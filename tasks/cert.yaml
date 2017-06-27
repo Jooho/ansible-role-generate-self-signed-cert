@@ -16,13 +16,14 @@
 - name: "Set root cnf if intermediate ca is not used"
   set_fact:
     cnf_file: root-ca_openssl.cnf
-  when: "not {{use_intermediate_cert}}"
+  when: "{{not use_intermediate_cert}}"
 
 - name: "Copy root intermediate ca openssl.cnf to {{cert_base_dir}}"
   template: "src=intermediate-ca_openssl.cnf.j2 dest={{cert_base_dir}}/intermediate/intermediate-ca_openssl.cnf force=yes"
+  when: "{{use_intermediate_cert}}"
 
-- name: "Backup intermediate-ca_openssl.cnf"
-  copy: src="{{cert_base_dir}}/{{cnf_file}}" dest="{{cert_base_dir}}/{{cnf_file}}.ori"
+  - name: "Backup intermediate-ca_openssl.cnf"
+    copy: src="{{cert_base_dir}}/{{cnf_file}}" dest="{{cert_base_dir}}/{{cnf_file}}.ori" remote_src=yes
 
 - block:
   - name: Add SAN req_extensions
@@ -80,11 +81,11 @@
   always: 
 
   - name: "Roll Back intermediate-ca_openssl.cnf"
-    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}"
+    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
     when: "{{use_intermediate_cert}}"
 
   - name: "Roll Back root-ca_openssl.cnf"
-    copy: src="{{cert_base_dir}}//{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}"
+    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
     when: "not {{use_intermediate_cert}}"
 
 - name: "Verify Server Certificate Cert"
