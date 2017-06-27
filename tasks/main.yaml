@@ -1,0 +1,40 @@
+---
+
+- name: "Clean Cert Base folder"
+  file: path="{{cert_base_dir}}" state="absent"
+  when: "{{clean_all}}"
+
+- name: "Check if ROOT CA exist"
+  stat: path="{{cert_base_dir}}/certs/root-ca.cert.pem"
+  register: root_ca_exist
+
+- name: "Include generate ROOT CA script"
+  include: root-ca.yaml
+  when: "root_ca_exist.stat.exists == false "
+
+- name: "Check if Intermediate CA exist"
+  stat: path="{{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem"
+  register: intermediate_ca_exist
+
+- name: "Excute generate Intermediate CA script"
+  include: intermediate-ca.yaml
+  when: "{{use_intermediate_cert}} and intermediate_ca_exist.stat.exists == false"
+
+- name: "Check if server certificate exist"
+  stat: "path={{cert_base_dir}}/{{cert_commonName}}"
+  register: server_cert_exist
+
+- name: "Clean server certificate folder"
+  file: path="{{cert_base_dir}}/{{cert_commonName}}" state="absent"
+  when: "server_cert_exist.stat.exists == true and {{overwrite_server_cert}}"
+
+- name: "Delete registered server from intermediate index.txt"
+  lineinfile:
+    name: "{{cert_base_dir}}/intermediate/index.txt"
+    regexp: "{{cert_commonName}}"
+    state: absent
+  when: "server_cert_exist.stat.exists == true and {{overwrite_server_cert}}"
+
+- name: "Excute generate Server Certificate script"
+  include: cert.yaml
+  when: "server_cert_exist.stat.exists == false or {{overwrite_server_cert}}"

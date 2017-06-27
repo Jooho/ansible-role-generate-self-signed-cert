@@ -1,0 +1,106 @@
+---
+
+
+- name: "Default CA File"
+  set_fact:
+    cnf_file: intermediate/intermediate-ca_openssl.cnf
+
+- name: "Create Server Certificate base folder"
+  file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
+  with_items:
+    - { path: "{{cert_base_dir}}/{{cert_commonName}}", type: directory, mode: 755}
+
+- name: "Generate Server Certificate Key"
+  shell: "openssl genrsa -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem {{server_cert_bit}}"
+
+- name: "Set root cnf if intermediate ca is not used"
+  set_fact:
+    cnf_file: root-ca_openssl.cnf
+  when: "not {{use_intermediate_cert}}"
+
+- name: "Copy root intermediate ca openssl.cnf to {{cert_base_dir}}"
+  template: "src=intermediate-ca_openssl.cnf.j2 dest={{cert_base_dir}}/intermediate/intermediate-ca_openssl.cnf force=yes"
+
+- name: "Backup intermediate-ca_openssl.cnf"
+  copy: src="{{cert_base_dir}}/{{cnf_file}}" dest="{{cert_base_dir}}/{{cnf_file}}.ori"
+
+- block:
+  - name: Add SAN req_extensions
+    lineinfile:
+      name: "{{cert_base_dir}}/{{cnf_file}}"
+      regexp: "#SAN_PLACEHOLDER"
+      line: "req_extensions = v3_req"
+    when: "{{use_san}}"
+
+  - name: Config SAN info
+    shell: "echo {{item}} >> {{cert_base_dir}}/{{cnf_file}}"
+    with_items:
+      - "[ v3_req ]"
+      - "# Extensions to add to a certificate request"
+      - "basicConstraints = CA:FALSE"
+      - "keyUsage = nonRepudiation, digitalSignature, keyEncipherment"
+      - "subjectAltName = @alt_names"
+    when: "{{use_san}}"
+
+  - name: Config SAN info
+    shell: "echo {{item}} >> {{cert_base_dir}}/{{cnf_file}}"
+    with_items:
+      - "[ alt_names ]"
+    when: "{{use_san}}"
+
+  - name: Add SAN DNS info
+    shell: "echo DNS.0={{cert_commonName}} >> {{cert_base_dir}}/{{cnf_file}}"
+    when: "san_dns is undefined and {{use_san}}"
+ 
+  - name: Add SAN DNS info
+    shell: "echo DNS.{{item.index}}={{item.dns}} >> {{cert_base_dir}}/{{cnf_file}}"
+    with_items: 
+      - "{{san_dns}}"
+    when: "san_dns is defined and {{use_san}}"
+ 
+  - name: Add SAN IP info
+    shell: "echo IP.{{item.index}}={{item.ip}} >> {{cert_base_dir}}/{{cnf_file}}"
+    with_items: 
+      - "{{san_ip}}"
+    when: "san_dns is defined and {{use_san}}"
+ 
+  - name: "Generate Server Certificate CSR"
+    shell: openssl req -config {{cert_base_dir}}/{{cnf_file}} -new -sha256  -key {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{cert_commonName}}/EA={{emailAddress}}"
+ 
+  - name: "Generate Server Certificate Cert"
+    shell: "yes y|openssl ca -config {{cert_base_dir}}/{{cnf_file}} {{use_san| ternary('-extensions v3_req','')}}  -days 365 -notext -md sha256  -in {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem"
+ 
+  - name: "Change permission for private key/cert"
+    file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
+    with_items:
+      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem", type: file, mode: 400}
+      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem", type: file, mode: 444}
+
+
+  always: 
+
+  - name: "Roll Back intermediate-ca_openssl.cnf"
+    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}"
+    when: "{{use_intermediate_cert}}"
+
+  - name: "Roll Back root-ca_openssl.cnf"
+    copy: src="{{cert_base_dir}}//{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}"
+    when: "not {{use_intermediate_cert}}"
+
+- name: "Verify Server Certificate Cert"
+  shell: openssl verify -CAfile {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem   {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem
+  register: verify_server_cert
+  when: "{{use_intermediate_cert}}"
+
+- name: "Fail, if Intermediate CA cert is not verified"
+  fail: msg="Server certificate is not verified."
+  when: "{{use_intermediate_cert}} and verify_server_cert.stdout.find('OK') == -1 "
+
+- name: "Verify Server Certificate Cert"
+  shell: openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem
+  register: verify_server_cert
+  when: "not {{use_intermediate_cert}}"
+
+- name: "Fail, if Root CA cert is not verified"
+  fail: msg="Server certificate is not verified."
+  when: "not {{use_intermediate_cert}} and verify_server_cert.stdout.find('OK') == -1 "

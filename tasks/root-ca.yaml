@@ -1,0 +1,29 @@
+---
+
+- name: "Create CA base/private/crl/certs/newcerts folders and index.txt/serial files for root"
+  file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
+  with_items:
+    - { path: "{{cert_base_dir}}/certs", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/private", type: directory, mode: 644}
+    - { path: "{{cert_base_dir}}/newcerts", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/crl", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/index.txt", type: touch, mode: 755}
+
+- name: "Create serial file"
+  copy: dest="{{cert_base_dir}}/serial" content="1000" mode=755
+
+- name: "Copy root ca openssl.cnf to {{cert_base_dir}}"
+  template: "src=root-ca_openssl.cnf.j2 dest={{cert_base_dir}}/root-ca_openssl.cnf force=yes"
+
+- name: "Generate Root CA Key"
+  shell: "openssl genrsa -out {{cert_base_dir}}/private/root-ca.key.pem {{root_cert_bit}}"
+
+- name: "Generate Root CA Cert"
+  shell: yes y|openssl req -config {{cert_base_dir}}/root-ca_openssl.cnf -key {{cert_base_dir}}/private/root-ca.key.pem  -new -x509 -days 7300 -sha256 -extensions v3_ca  -out {{cert_base_dir}}/certs/root-ca.cert.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{root_commonName}}/EA={{emailAddress}}"
+
+#- name: "Create CA base/private/crl/certs/newcerts folders and index.txt/serial files for root"
+#  file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
+#  with_items:
+#    - { path: "{{cert_base_dir}}/private/root-ca.key.pem", type: file, mode: 400}
+#    - { path: "{{cert_base_dir}}/certs/root-ca.cert.pem", type: file, mode: 444}
+

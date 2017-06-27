@@ -1,0 +1,21 @@
+clean_all: yes
+overwrite_server_cert: yes
+use_san: yes
+use_intermediate_cert: yes
+root_cert_bit: 4096
+intermediate_cert_bit: 4096
+server_cert_bit: 2048
+cert_base_dir: /root/cert_base
+serial_number: 1000
+
+countryName: CA
+stateOrProvinceName: ON
+localityName: MILTON
+organizationName: REDHAT
+organizationalUnitName: SCE
+emailAddress: test@test.com
+
+root_commonName: Root CA
+intermediate_commonName: Intermediate CA
+cert_commonName: lb.example.com
+

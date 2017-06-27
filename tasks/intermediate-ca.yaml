@@ -1,0 +1,45 @@
+---
+
+- name: "Create Intermediate CA base/private/crl/certs/newcerts folders and index.txt/serial files for root"
+  file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
+  with_items:
+    - { path: "{{cert_base_dir}}/intermediate/certs", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/intermediate/csr", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/intermediate/private", type: directory, mode: 700}
+    - { path: "{{cert_base_dir}}/intermediate/newcerts", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/intermediate/crl", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/intermediate/index.txt", type: touch, mode: 755}
+
+- name: "Create serial file"
+  copy: dest="{{cert_base_dir}}/intermediate/serial" content="1000" mode=755
+
+- name: "Copy root intermediate ca openssl.cnf to {{cert_base_dir}}"
+  template: "src=intermediate-ca_openssl.cnf.j2 dest={{cert_base_dir}}/intermediate/intermediate-ca_openssl.cnf force=yes"
+
+- name: "Generate Intermediate CA Key"
+  shell: "openssl genrsa -out {{cert_base_dir}}/intermediate/private/intermediate-ca.key.pem {{intermediate_cert_bit}}"
+
+- name: "Generate Intermediate CSR"
+  shell: openssl req -config {{cert_base_dir}}/intermediate/intermediate-ca_openssl.cnf -new -sha256  -key {{cert_base_dir}}/intermediate/private/intermediate-ca.key.pem  -out {{cert_base_dir}}/intermediate/csr/intermediate-ca.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{intermediate_commonName}}/EA={{emailAddress}}"
+
+
+- name: "Generate Intermediate CA Cert"
+  shell: "yes y|openssl ca -config {{cert_base_dir}}/root-ca_openssl.cnf -extensions v3_intermediate_ca  -days 3650 -notext -md sha256  -in {{cert_base_dir}}/intermediate/csr/intermediate-ca.csr.pem  -out {{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem"
+
+- name: "Create ca-chain file"
+  shell: cat {{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem    {{cert_base_dir}}/certs/root-ca.cert.pem > {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem
+
+- name: "Change permission for private key/cert"
+  file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
+  with_items:
+    - { path: "{{cert_base_dir}}/intermediate/private/intermediate-ca.key.pem", type: file, mode: 400}
+    - { path: "{{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem", type: file, mode: 444}
+    - { path: "{{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem", type: file, mode: 444}
+
+- name: "Verify Intermediate CA Cert"
+  shell: openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem
+  register: verify_intermediate_cert
+
+- name: "Fail, if Intermediate CA cert is not verified"
+  fail: msg="Intermediate CA is not verified."
+  when: "verify_intermediate_cert.stdout.find('OK') == -1 "
