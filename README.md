@@ -67,9 +67,9 @@ Example Playbook
 Example Vars
 ------------
 Wildcard Certificate:
-~~
+~~~
 cert_commonName: *.cloudapps.example.com
-~~
+~~~
 
 SAN DNS LIST:
 ~~~
