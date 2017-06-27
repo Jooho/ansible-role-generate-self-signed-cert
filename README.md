@@ -60,7 +60,7 @@ Example Playbook
   gather_facts: false
 
    roles:
-      - { role: Jooho.generate_self_signed_cert }
+      - { role: Jooho.generate-self-signed-cert }
 
 ~~~
 
