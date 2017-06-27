@@ -1,0 +1,15 @@
+galaxy_info:
+  author: jooho lee
+  description: This role help generate self signed certificate. 
+  company: your company (optional)
+  license: BSD/MIT
+  platforms:
+  - name: Fedora
+    versions:
+    - all
+  galaxy_tags:
+  - openssl
+  - self-signed-cert
+  - intermediate-cert
+  - san
+
