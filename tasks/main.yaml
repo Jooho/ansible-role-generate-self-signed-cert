@@ -1,5 +1,8 @@
 ---
 
+- name: "Install Openssl"
+  package: name="openssl" state="latest"
+
 - name: "Clean Cert Base folder"
   file: path="{{cert_base_dir}}" state="absent"
   when: "{{clean_all}}"

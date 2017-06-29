@@ -15,7 +15,7 @@ Case 2:
 
 Requirements
 ------------
-None
+yum
 
 Role Variables
 --------------
@@ -60,16 +60,16 @@ Example Playbook
   gather_facts: false
 
    roles:
-      - { role: Jooho.generate_self_signed_cert }
+      - { role: Jooho.generate-self-signed-cert }
 
 ~~~
 
 Example Vars
 ------------
 Wildcard Certificate:
-~~
+~~~
 cert_commonName: *.cloudapps.example.com
-~~
+~~~
 
 SAN DNS LIST:
 ~~~

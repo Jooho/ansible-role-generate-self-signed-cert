@@ -1,0 +1,5 @@
+[all]
+ansible-role-generate-self-signed-cert ansible_connection=docker
+
+[group1]
+ansible-role-generate-self-signed-cert
