@@ -92,6 +92,11 @@ openssl x509 -in {{cert_base_dir}/{{server_cert_commomName}}/{{server_cert_commo
 openssl x509 -in /root/cert_base/lb.example.com/lb.example.com.cert.pem -text
 ~~~
 
+
+Reference Doc
+--------------
+- https://jamielinux.com/docs/openssl-certificate-authority/
+
 License
 -------
 
