@@ -16,10 +16,10 @@
 - name: "Set root cnf if intermediate ca is not used"
   set_fact:
     cnf_file: root-ca_openssl.cnf
-  when: "{{not use_intermediate_cert}}"
+  when: not use_intermediate_cert|bool
 
-  - name: "Backup intermediate-ca_openssl.cnf"
-    copy: src="{{cert_base_dir}}/{{cnf_file}}" dest="{{cert_base_dir}}/{{cnf_file}}.ori" remote_src=yes
+- name: "Backup intermediate-ca_openssl.cnf"
+  copy: src="{{cert_base_dir}}/{{cnf_file}}" dest="{{cert_base_dir}}/{{cnf_file}}.ori" remote_src=yes
 
 - block:
 
@@ -28,23 +28,23 @@
     with_items:
       - "subjectAltName = @alt_names"
       - "[ alt_names ]"
-    when: "{{use_san}}"
+    when: use_san|bool
 
   - name: Add SAN DNS Info for CN
     shell: "echo DNS.0={{cert_commonName}} >> {{cert_base_dir}}/{{cnf_file}}"
-    when: "san_dns is undefined and {{use_san}}"
+    when: use_san|bool
  
   - name: Add SAN DNS List
     shell: "echo DNS.{{item.index}}={{item.dns}} >> {{cert_base_dir}}/{{cnf_file}}"
     with_items: 
       - "{{san_dns}}"
-    when: "san_dns is defined and {{use_san}}"
+    when: san_dns is defined and use_san|bool
  
   - name: Add SAN IP List
     shell: "echo IP.{{item.index}}={{item.ip}} >> {{cert_base_dir}}/{{cnf_file}}"
     with_items: 
       - "{{san_ip}}"
-    when: "san_dns is defined and {{use_san}}"
+    when: san_ip is defined and use_san|bool
  
   - name: "Generate Server Certificate CSR"
     shell: openssl req -config {{cert_base_dir}}/{{cnf_file}} -new -sha256  -key {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{cert_commonName}}/EA={{emailAddress}}"
@@ -58,30 +58,25 @@
       - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem", type: file, mode: 400}
       - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem", type: file, mode: 444}
 
-  always: 
+        #  always: 
 
-  - name: "Roll Back intermediate-ca_openssl.cnf"
-    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
-    when: "{{use_intermediate_cert}}"
-
-  - name: "Roll Back root-ca_openssl.cnf"
-    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
-    when: "not {{use_intermediate_cert}}"
+        #  - name: "Roll Back openssl.cnf"
+        #    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
 
 - name: "Verify Server Certificate Cert"
   shell: openssl verify -CAfile {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem   {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem
   register: verify_server_cert
-  when: "{{use_intermediate_cert}}"
+  when: use_intermediate_cert|bool
 
 - name: "Fail, if Intermediate CA cert is not verified"
   fail: msg="Server certificate is not verified."
-  when: "{{use_intermediate_cert}} and verify_server_cert.stdout.find('OK') == -1 "
+  when: use_intermediate_cert|bool and verify_server_cert.stdout.find('OK') == -1 
 
 - name: "Verify Server Certificate Cert"
   shell: openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem
   register: verify_server_cert
-  when: "not {{use_intermediate_cert}}"
+  when: not use_intermediate_cert|bool
 
 - name: "Fail, if Root CA cert is not verified"
   fail: msg="Server certificate is not verified."
-  when: "not {{use_intermediate_cert}} and verify_server_cert.stdout.find('OK') == -1 "
+  when: not use_intermediate_cert|bool and verify_server_cert.stdout.find('OK') == -1 

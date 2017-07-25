@@ -42,4 +42,4 @@
 
 - name: "Fail, if Intermediate CA cert is not verified"
   fail: msg="Intermediate CA is not verified."
-  when: "verify_intermediate_cert.stdout.find('OK') == -1 "
+  when: verify_intermediate_cert.stdout.find('OK') == -1 

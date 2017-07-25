@@ -1,11 +1,11 @@
 ---
 
 - name: "Install Openssl"
-  package: name="openssl" state="latest"
+  yum: name="openssl" state="latest" 
 
 - name: "Clean Cert Base folder"
   file: path="{{cert_base_dir}}" state="absent"
-  when: "{{clean_all}}"
+  when: clean_all|bool
 
 - name: "Check if ROOT CA exist"
   stat: path="{{cert_base_dir}}/certs/root-ca.cert.pem"
@@ -13,7 +13,7 @@
 
 - name: "Include generate ROOT CA script"
   include: root-ca.yaml
-  when: "root_ca_exist.stat.exists == false "
+  when: not root_ca_exist.stat.exists
 
 - name: "Check if Intermediate CA exist"
   stat: path="{{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem"
@@ -21,23 +21,27 @@
 
 - name: "Excute generate Intermediate CA script"
   include: intermediate-ca.yaml
-  when: "{{use_intermediate_cert}} and intermediate_ca_exist.stat.exists == false"
+  when: use_intermediate_cert|bool and not intermediate_ca_exist.stat.exists
 
 - name: "Check if server certificate exist"
   stat: "path={{cert_base_dir}}/{{cert_commonName}}"
   register: server_cert_exist
 
+- name: "Fail, if certificate is exist and overwrite_server_cert is false/no"
+  fail: msg="Server certificate exist and overwrite_server_cert is {{overwrite_server_cert}}."
+  when: server_cert_exist.stat.exists and not overwrite_server_cert|bool
+
 - name: "Clean server certificate folder"
   file: path="{{cert_base_dir}}/{{cert_commonName}}" state="absent"
-  when: "server_cert_exist.stat.exists == true and {{overwrite_server_cert}}"
+  when: server_cert_exist.stat.exists and overwrite_server_cert|bool
 
 - name: "Delete registered server from intermediate index.txt"
   lineinfile:
     name: "{{cert_base_dir}}/intermediate/index.txt"
     regexp: "{{cert_commonName}}"
     state: absent
-  when: "server_cert_exist.stat.exists == true and {{overwrite_server_cert}}"
+  when: server_cert_exist.stat.exists and overwrite_server_cert|bool
 
 - name: "Excute generate Server Certificate script"
   include: cert.yaml
-  when: "server_cert_exist.stat.exists == false or {{overwrite_server_cert}}"
+  when: not server_cert_exist.stat.exists or overwrite_server_cert|bool
