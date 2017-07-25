@@ -47,7 +47,7 @@
     when: san_ip is defined and use_san|bool
  
   - name: "Generate Server Certificate CSR"
-    shell: openssl req -config {{cert_base_dir}}/{{cnf_file}} -new -sha256  -key {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{cert_commonName}}/EA={{emailAddress}}"
+    shell: openssl req -config {{cert_base_dir}}/{{cnf_file}} -new -sha256  -key {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{cert_commonName}}/emailAddress={{emailAddress}}"
  
   - name: "Generate Server Certificate Cert"
     shell: "yes y|openssl ca -config {{cert_base_dir}}/{{cnf_file}} -extensions server_cert  -days 365 -notext -md sha256  -in {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem"

@@ -20,7 +20,7 @@
   shell: "openssl genrsa -out {{cert_base_dir}}/intermediate/private/intermediate-ca.key.pem {{intermediate_cert_bit}}"
 
 - name: "Generate Intermediate CSR"
-  shell: openssl req -config {{cert_base_dir}}/intermediate/intermediate-ca_openssl.cnf -new -sha256  -key {{cert_base_dir}}/intermediate/private/intermediate-ca.key.pem  -out {{cert_base_dir}}/intermediate/csr/intermediate-ca.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{intermediate_commonName}}/EA={{emailAddress}}"
+  shell: openssl req -config {{cert_base_dir}}/intermediate/intermediate-ca_openssl.cnf -new -sha256  -key {{cert_base_dir}}/intermediate/private/intermediate-ca.key.pem  -out {{cert_base_dir}}/intermediate/csr/intermediate-ca.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{intermediate_commonName}}/emailAddress={{emailAddress}}"
 
 
 - name: "Generate Intermediate CA Cert"

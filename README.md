@@ -22,26 +22,26 @@ Role Variables
 
 | Name                      | Default value                         |        Requird       | Description                                                                 |
 |---------------------------|---------------------------------------|----------------------|-----------------------------------------------------------------------------|
-| cert_base_dir             | /root/cert_base                       |         yes          | Default Cert Base Directory                                                 |
-| root_cert_bit             | 4096                                  |         yes          | Default Root Cert Bit Size                                                  |
-| intermediate_cert_bit     | 4096                                  |         yes          | Default Intermediate Cert Bit Size                                          |
-| server_cert_bit           | 2048                                  |         yes          | Default Server Cert Bit Size                                                |
-| serial_number             | 1000                                  |         yes          | Cert Common Info - Serial Number                                            |
-| countryName               | CA                                    |         yes          | Cert Common Info - Country Name                                             |
-| stateOrProvinceName       | ON                                    |         yes          | Cert Common Info - Province Name                                            |
-| localityName              | MILTON                                |         yes          | Cert Common Info - Locality Name                                            |
-| organizationName          | RED HAT                               |         yes          | Cert Common Info - Org Name                                                 |
-| organizationalUnitName    | SCE                                   |         yes          | Cert Common Info - Org Unit Name                                            |
-| emailAddress              | test@test.com                         |         yes          | Cert Common Info - Email Address                                            |
-| root_commonName           | Root CA                               |         yes          | Root Cert Info - Root CN                                                    |
-| intermediate_commonName   | Intermediate CA                       |         yes          | Intermediate Cert Info - Intermediate CN                                    |
-| cert_commonName           | lb.example.com                        |         yes          | Server Cert Info - Server Cert CN                                           |
-| use_intermediate_cert     | yes                                   |         yes          | If no, it does not issue intermediate cert                                  |
-| use_san                   | yes                                   |         yes          | If yes, SAN info will be added with CN name                                 |
+| cert_base_dir             | /root/cert_base                       |         no           | Default Cert Base Directory                                                 |
+| root_cert_bit             | 4096                                  |         no           | Default Root Cert Bit Size                                                  |
+| intermediate_cert_bit     | 4096                                  |         no           | Default Intermediate Cert Bit Size                                          |
+| server_cert_bit           | 2048                                  |         no           | Default Server Cert Bit Size                                                |
+| serial_number             | 1000                                  |         no           | Cert Common Info - Serial Number                                            |
+| countryName               | CA                                    |         no           | Cert Common Info - Country Name                                             |
+| stateOrProvinceName       | ON                                    |         no           | Cert Common Info - Province Name                                            |
+| localityName              | MILTON                                |         no           | Cert Common Info - Locality Name                                            |
+| organizationName          | RED HAT                               |         no           | Cert Common Info - Org Name                                                 |
+| organizationalUnitName    | SCE                                   |         no           | Cert Common Info - Org Unit Name                                            |
+| emailAddress              | test@test.com                         |         no           | Cert Common Info - Email Address                                            |
+| root_commonName           | Root CA                               |         no           | Root Cert Info - Root CN                                                    |
+| intermediate_commonName   | Intermediate CA                       |         no           | Intermediate Cert Info - Intermediate CN                                    |
+| cert_commonName           | lb.example.com                        |         no           | Server Cert Info - Server Cert CN                                           |
+| use_intermediate_cert     | yes                                   |         no           | If no, it does not issue intermediate cert                                  |
+| use_san                   | yes                                   |         no           | If yes, SAN info will be added with CN name                                 |
 | san_dns                   |                                       |         no           | Add several SAN DNS List                                                    |
 | san_ip                    |                                       |         no           | Add several SAN IP List                                                     |
-| overwrite_server_cert     | yes                                   |         yes          | Delete server cert directory that is based on CN name                       |
-| clean_all                 | no                                    |         yes          | Recreate all certs                                                          |
+| overwrite_server_cert     | yes                                   |         no           | Delete server cert directory that is based on CN name                       |
+| clean_all                 | no                                    |         no           | Recreate all certs                                                          |
 
 
 
