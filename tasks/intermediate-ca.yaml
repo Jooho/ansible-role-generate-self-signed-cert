@@ -34,7 +34,7 @@
   with_items:
     - { path: "{{cert_base_dir}}/intermediate/private/intermediate-ca.key.pem", type: file, mode: 400}
     - { path: "{{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem", type: file, mode: 444}
-    - { path: "{{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem", type: file, mode: 444}
+    - { path: "{{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem", type: file, mode: 777}
 
 - name: "Verify Intermediate CA Cert"
   shell: openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/intermediate/certs/intermediate-ca.cert.pem
