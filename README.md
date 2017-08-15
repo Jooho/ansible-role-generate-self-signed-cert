@@ -86,7 +86,7 @@ san_ip:
 
 NOTE
 ----
-The private key & certificate permission should be 400/444 but this ansible role use 770/770 because these files will be copied to somewhere.
+The private key & certificate permission should be 400/444 but this ansible role use 777/777 because these files will be copied to somewhere.
 After you copy them, it is recommended to change permissions.
 
 Useful Commands
