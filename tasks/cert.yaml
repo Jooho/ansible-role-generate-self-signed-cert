@@ -55,8 +55,8 @@
   - name: "Change permission for private key/cert"
     file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
     with_items:
-      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem", type: file, mode: 770}
-      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem", type: file, mode: 770}
+      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem", type: file, mode: 777}
+      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem", type: file, mode: 777}
 
   always: 
 
