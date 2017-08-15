@@ -24,6 +24,6 @@
 - name: "Create CA base/private/crl/certs/newcerts folders and index.txt/serial files for root"
   file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
   with_items:
-    - { path: "{{cert_base_dir}}/private/root-ca.key.pem", type: file, mode: 400}
-    - { path: "{{cert_base_dir}}/certs/root-ca.cert.pem", type: file, mode: 444}
+    - { path: "{{cert_base_dir}}/private/root-ca.key.pem", type: file, mode: 777}
+    - { path: "{{cert_base_dir}}/certs/root-ca.cert.pem", type: file, mode: 777}
 
