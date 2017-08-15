@@ -1,4 +1,4 @@
-clean_all: yes
+clean_all: no
 overwrite_server_cert: yes
 use_san: yes
 use_intermediate_cert: yes

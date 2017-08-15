@@ -55,13 +55,13 @@
   - name: "Change permission for private key/cert"
     file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
     with_items:
-      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem", type: file, mode: 400}
-      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem", type: file, mode: 444}
+      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem", type: file, mode: 770}
+      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem", type: file, mode: 770}
 
-        #  always: 
+  always: 
 
-        #  - name: "Roll Back openssl.cnf"
-        #    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
+  - name: "Roll Back openssl.cnf"
+    copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
 
 - name: "Verify Server Certificate Cert"
   shell: openssl verify -CAfile {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem   {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem

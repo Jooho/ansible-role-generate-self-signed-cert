@@ -84,6 +84,10 @@ san_ip:
  - { index: 1, ip: 192.168.200.205}
 ~~~
 
+NOTE
+----
+The private key & certificate permission should be 400/444 but this ansible role use 770/770 because these files will be copied to somewhere.
+After you copy them, it is recommended to change permissions.
 
 Useful Commands
 ---------------
@@ -91,7 +95,6 @@ Useful Commands
 openssl x509 -in {{cert_base_dir}/{{server_cert_commomName}}/{{server_cert_commonName}.cert.pem -text
 openssl x509 -in /root/cert_base/lb.example.com/lb.example.com.cert.pem -text
 ~~~
-
 
 Reference Doc
 --------------
