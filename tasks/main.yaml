@@ -35,12 +35,19 @@
   file: path="{{cert_base_dir}}/{{cert_commonName}}" state="absent"
   when: server_cert_exist.stat.exists and overwrite_server_cert|bool
 
+- name: "Delete registered server from root index.txt"
+  lineinfile:
+    name: "{{cert_base_dir}}/index.txt"
+    regexp: "{{cert_commonName}}"
+    state: absent
+  when: not use_intermediate_cert|bool and server_cert_exist.stat.exists and overwrite_server_cert|bool
+
 - name: "Delete registered server from intermediate index.txt"
   lineinfile:
     name: "{{cert_base_dir}}/intermediate/index.txt"
     regexp: "{{cert_commonName}}"
     state: absent
-  when: server_cert_exist.stat.exists and overwrite_server_cert|bool
+  when: use_intermediate_cert|bool and server_cert_exist.stat.exists and overwrite_server_cert|bool
 
 - name: "Excute generate Server Certificate script"
   include: cert.yaml
