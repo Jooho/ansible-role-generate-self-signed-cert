@@ -1,6 +1,5 @@
 ---
 
-
 - name: "Default CA File"
   set_fact:
     cnf_file: intermediate/intermediate-ca_openssl.cnf
@@ -8,10 +7,10 @@
 - name: "Create Server Certificate base folder"
   file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
   with_items:
-    - { path: "{{cert_base_dir}}/{{cert_commonName}}", type: directory, mode: 755}
+    - { path: "{{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}", type: directory, mode: 755}
 
 - name: "Generate Server Certificate Key"
-  shell: "openssl genrsa -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem {{server_cert_bit}}"
+  shell: "openssl genrsa -out {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.key.pem {{server_cert_bit}}"
 
 - name: "Set root cnf if intermediate ca is not used"
   set_fact:
@@ -47,16 +46,17 @@
     when: san_ip is defined and use_san|bool
  
   - name: "Generate Server Certificate CSR"
-    shell: openssl req -config {{cert_base_dir}}/{{cnf_file}} -new -sha256  -key {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{cert_commonName}}/emailAddress={{emailAddress}}"
+    shell: >
+      openssl req -config {{cert_base_dir}}/{{cnf_file}} -new -sha256  -key {{cert_base_dir}}/{{cert_commonName | regex_replace('^\*','wild')}}/{{cert_commonName | regex_replace('^\*','wild')}}.key.pem  -out {{cert_base_dir}}/{{cert_commonName | regex_replace('^\*','wild')}}/{{cert_commonName | regex_replace('^\*','wild')}}.csr.pem -subj "/C={{countryName}}/ST={{stateOrProvinceName}}/L={{localityName}}/O={{organizationName}}/OU={{organizationalUnitName}}/CN={{cert_commonName}}/emailAddress={{emailAddress}}"
  
   - name: "Generate Server Certificate Cert"
-    shell: "yes y|openssl ca -config {{cert_base_dir}}/{{cnf_file}} -extensions server_cert  -days 365 -notext -md sha256  -in {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.csr.pem  -out {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem"
+    shell: "yes y|openssl ca -config {{cert_base_dir}}/{{cnf_file}} -extensions server_cert  -days 365 -notext -md sha256  -in {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.csr.pem  -out {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem"
  
   - name: "Change permission for private key/cert"
     file: "path={{item.path}} state={{item.type}} mode={{item.mode}}"
     with_items:
-      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.key.pem", type: file, mode: 777}
-      - { path: "{{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem", type: file, mode: 777}
+      - { path: "{{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.key.pem", type: file, mode: 777}
+      - { path: "{{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem", type: file, mode: 777}
 
   always: 
 
@@ -64,7 +64,7 @@
     copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
 
 - name: "Verify Server Certificate Cert"
-  shell: openssl verify -CAfile {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem   {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem
+  shell: openssl verify -CAfile {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem   {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem
   register: verify_server_cert
   when: use_intermediate_cert|bool
 
@@ -73,7 +73,7 @@
   when: use_intermediate_cert|bool and verify_server_cert.stdout.find('OK') == -1 
 
 - name: "Verify Server Certificate Cert"
-  shell: openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/{{cert_commonName}}/{{cert_commonName}}.cert.pem
+  shell: openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem
   register: verify_server_cert
   when: not use_intermediate_cert|bool
 

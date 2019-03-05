@@ -24,7 +24,7 @@
   when: use_intermediate_cert|bool and not intermediate_ca_exist.stat.exists
 
 - name: "Check if server certificate exist"
-  stat: "path={{cert_base_dir}}/{{cert_commonName}}"
+  stat: "path={{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}"
   register: server_cert_exist
 
 - name: "Fail, if certificate is exist and overwrite_server_cert is false/no"
@@ -32,20 +32,20 @@
   when: server_cert_exist.stat.exists and not overwrite_server_cert|bool
 
 - name: "Clean server certificate folder"
-  file: path="{{cert_base_dir}}/{{cert_commonName}}" state="absent"
+  file: path="{{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}" state="absent"
   when: server_cert_exist.stat.exists and overwrite_server_cert|bool
 
 - name: "Delete registered server from root index.txt"
   lineinfile:
     name: "{{cert_base_dir}}/index.txt"
-    regexp: "{{cert_commonName}}"
+    regexp: "{{cert_commonName | regex_replace('^\\*','wild')}}"
     state: absent
   when: not use_intermediate_cert|bool and server_cert_exist.stat.exists and overwrite_server_cert|bool
 
 - name: "Delete registered server from intermediate index.txt"
   lineinfile:
     name: "{{cert_base_dir}}/intermediate/index.txt"
-    regexp: "{{cert_commonName}}"
+    regexp: "{{cert_commonName | regex_replace('^\\*','wild')}}"
     state: absent
   when: use_intermediate_cert|bool and server_cert_exist.stat.exists and overwrite_server_cert|bool
 
