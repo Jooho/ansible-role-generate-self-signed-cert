@@ -64,7 +64,7 @@
     copy: src="{{cert_base_dir}}/{{cnf_file}}.ori" dest="{{cert_base_dir}}/{{cnf_file}}" remote_src=yes
 
 - name: "Verify Server Certificate Cert"
-  shell: openssl verify -CAfile {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem   {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem
+  shell: "openssl verify -CAfile {{cert_base_dir}}/intermediate/certs/ca-chain.cert.pem   {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem"
   register: verify_server_cert
   when: use_intermediate_cert|bool
 
@@ -73,7 +73,7 @@
   when: use_intermediate_cert|bool and verify_server_cert.stdout.find('OK') == -1 
 
 - name: "Verify Server Certificate Cert"
-  shell: openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem
+  shell: "openssl verify -CAfile {{cert_base_dir}}/certs/root-ca.cert.pem   {{cert_base_dir}}/{{cert_commonName | regex_replace('^\\*','wild')}}/{{cert_commonName | regex_replace('^\\*','wild')}}.cert.pem"
   register: verify_server_cert
   when: not use_intermediate_cert|bool
 
